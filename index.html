@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="style.css">
+<table id="table">
+	<tr>
+		<th>Selected
+		<th>Name
+		<th>Volume
+		<th>Bluetooth enabled
+		<th>Audio codec
+</table>
+<div id="formContainer"></div>
+
+<template id="rowTemplate">
+	<tr>
+		<td><input type="checkbox" />
+		<td>
+		<td>
+		<td>
+		<td>
+</template>
+
+<script src="multo-selecto.js"></script>
+<script>
+let items = [];
+function createItemDescription(name, volume, bluetooth, codec) {
+	return {
+		name: name,
+		fields: [
+			{
+				id: "volume",
+				name: "Volume",
+				description: "The volume of the speaker",
+				type: "slider",
+				range: { from: 0, to: 100 },
+			},
+			{
+				id: "bluetooth",
+				name: "Bluetooth enabled",
+				type: "bool",
+			},
+			{
+				id: "codec",
+				name: "Audio codec",
+				type: "enum",
+				values: ["OPUS", "AAC", "G.726"],
+			}
+		],
+		values: {
+			"volume": volume,
+			"bluetooth": bluetooth,
+			"codec": codec
+		}
+	};
+}
+
+function updateFormContainer() {
+	let itemsToEdit = items.filter(i => i.checkbox.checked).map(i => i.desc);
+	console.log(itemsToEdit);
+	multo.setItems(itemsToEdit);
+}
+
+function createItem(name, volume, bluetooth, codec) {
+	let row = rowTemplate.content.cloneNode(true);
+	let tr = row.firstElementChild;
+	console.log(tr);
+
+	let checkbox = row.querySelector("input");
+	checkbox.onchange = e => {
+		tr.classList.toggle("selected");
+		updateFormContainer();
+	};
+
+	let cells = row.querySelectorAll("td");
+	console.log(cells);
+	cells[1].innerText = name;
+	cells[2].innerText = volume;
+	cells[3].innerText = bluetooth;
+	cells[4].innerText = codec;
+
+	let item = {
+		row: tr,
+		checkbox: checkbox,
+		desc: createItemDescription(name, volume, bluetooth, codec),
+	};
+	items.push(item);
+
+	table.appendChild(tr);
+}
+
+let multo = new MultoSelecto(formContainer);
+
+createItem("Speaker", 20, false, "AAC");
+createItem("Earphones", 50, false, "OPUS");
+createItem("Headphones", 90, true, "OPUS");
+updateFormContainer();
+</script>
