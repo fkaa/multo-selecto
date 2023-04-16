@@ -48,18 +48,35 @@
 		<button class="reset">Reset</button>
 </template>
 
-<script src="multo-selecto.js"></script>
-<script>
-let multo = new MultoSelecto(formContainer, {
-	sliderTemplate: sliderTemplate,
-	enumTemplate: enumTemplate,
-	boolTemplate: boolTemplate,
+<!-- Defining import maps allows us to import method from js files 
+as if we were working with node modules -->
+<!-- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules -->
+<script type="importmap">
+  {
+    "imports": {
+      "multo-selecto": "./index.js",
+      "bool": "./fields/bool.js",
+			"enum": "./fields/enum.js",
+			"slider": "./fields/slider.js",
+			"util": "./util.js"
+    }
+  }
+</script>
+<script type="module">
+// We can now import any functionality within the main script like this
+import { MultoSelecto } from "multo-selecto"
+
+const multo = new MultoSelecto(formContainer, {
+	// When inserting variables into an object, we can use a shorthand
+	sliderTemplate,
+	enumTemplate,
+	boolTemplate,
 });
 
-let items = [];
+const items = [];
 function createItemDescription(name, volume, bluetooth, codec) {
 	return {
-		name: name,
+		name,
 		fields: [
 			{
 				id: "volume",
