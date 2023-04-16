@@ -219,6 +219,7 @@ function getBoolDom(selecto, first, fields, values) {
 	let distinctValues = getDistinctValues(values);
 
 	let originalValue = distinctValues.length == 1 ? distinctValues[0] : null;
+	let isIndeterminate = distinctValues.length > 1;
 
 	let input = dom.querySelector("#input");
 	input.type = "checkbox";
@@ -227,14 +228,17 @@ function getBoolDom(selecto, first, fields, values) {
 		let newValue = e.target.checked;
 		selecto.onFieldChanged(first.id, newValue);
 
-		changeReceiver.classList.toggle("changed", originalValue !== newValue);
+		let valueIsDifferent = originalValue !== newValue && !e.target.indeterminate;
+
+		changeReceiver.classList.toggle("changed", valueIsDifferent);
 		if (reset !== null) {
-			reset.classList.toggle("changed", originalValue !== newValue);
+			reset.classList.toggle("changed", valueIsDifferent);
 		}
 	};
 	if (reset !== null) {
 		reset.onclick = e => {
 			input.checked = originalValue;
+			input.indeterminate = isIndeterminate;
 			input.dispatchEvent(new Event("change"));
 		};
 	}
