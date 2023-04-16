@@ -1,5 +1,10 @@
-function MultoSelecto(destinationContainer) {
+/**
+ * Creates a new `MultoSelecto` object which handles populating the given
+ * destination container with the available form options.
+ */
+function MultoSelecto(destinationContainer, options) {
 	this.container = destinationContainer;
+	this.options = options;
 	this.setItems = function(items) {
 		this.items = items;
 		this.container.innerHTML = "";
@@ -55,27 +60,50 @@ function createDomForFields(selecto, fields, values) {
 
 // create a slider from multiple field definitions
 function getSliderDom(selecto, first, fields, values) {
-	let container = document.createElement("div");
-	container.classList.add("input-element");
+	let dom = selecto.options.sliderTemplate.content.cloneNode(true).firstElementChild;
+	let reset = dom.querySelector(".reset");
+	let changeReceiver = dom.querySelector(".change-receiver");
+	if (changeReceiver === null) {
+		changeReceiver = dom;
+	}
 
-	let label = document.createElement("label");
+	let label = dom.querySelector("#label");
+	label.id = "";
 	label.innerText = first.name;
 	label.for = first.id;
 
-	let br = document.createElement("br");
-
 	let distinctValues = getDistinctValues(values);
-	let originalValue = distinctValues.length == 1 ? distinctValues[0] : null;
+	let originalValue = distinctValues.length == 1 ? distinctValues[0] : 0;
 
-	let input = document.createElement("input");
+	let input = dom.querySelector("#input");
+
+	if (distinctValues.length > 1) {
+		input.indeterminate = true;
+	}
+
 	input.type = "range";
 	input.id = first.id;
 	input.onchange = e => {
 		let newValue = e.target.value;
 		selecto.onFieldChanged(first.id, newValue);
 
-		container.classList.toggle("changed", originalValue !== newValue);
+		let valueIsDifferent = originalValue != newValue;
+
+		if (newValue == 0 && input.indeterminate == true) {
+			valueIsDifferent = false;
+		}
+
+		changeReceiver.classList.toggle("changed", valueIsDifferent);
+		if (reset !== null) {
+			reset.classList.toggle("changed", valueIsDifferent);
+		}
 	};
+	if (reset !== null) {
+		reset.onclick = e => {
+			input.value = originalValue;
+			input.dispatchEvent(new Event("change"));
+		};
+	}
 
 	let minOption = document.createElement("option");
 	let maxOption = document.createElement("option");
@@ -114,40 +142,50 @@ function getSliderDom(selecto, first, fields, values) {
 	datalist.appendChild(minOption);
 	datalist.appendChild(maxOption);
 
-	container.appendChild(label);
-	container.appendChild(br);
-	container.appendChild(input);
-	container.appendChild(datalist);
+	dom.appendChild(datalist);
 
-	return container;
+	return dom;
 }
 
 // create a combobox from multiple field definitions
 function getEnumDom(selecto, first, fields, values) {
-	let container = document.createElement("div");
-	container.classList.add("input-element");
+	let dom = selecto.options.enumTemplate.content.cloneNode(true).firstElementChild;
+	let reset = dom.querySelector(".reset");
+	let changeReceiver = dom.querySelector(".change-receiver");
+	if (changeReceiver === null) {
+		changeReceiver = dom;
+	}
 
-	let label = document.createElement("label");
+	let label = dom.querySelector("#label");
+	label.id = "";
 	label.innerText = first.name;
 	label.for = first.id;
 
-	let br = document.createElement("br");
-
 	let distinctValues = getDistinctValues(values);
-	let originalValue = distinctValues.length == 1 ? distinctValues[0] : null;
+	let originalValue = distinctValues.length == 1 ? distinctValues[0] : "";
 
-	let input = document.createElement("select");
+	let input = dom.querySelector("#input");
 	input.id = first.id;
 	input.onchange = e => {
 		let newValue = e.target.value;
 		selecto.onFieldChanged(first.id, newValue);
 
-		container.classList.toggle("changed", originalValue !== newValue);
+		changeReceiver.classList.toggle("changed", originalValue !== newValue);
+		if (reset !== null) {
+			reset.classList.toggle("changed", originalValue !== newValue);
+		}
 	};
+	if (reset !== null) {
+		reset.onclick = e => {
+			input.value = originalValue;
+			input.dispatchEvent(new Event("change"));
+		};
+	}
 
 	if (distinctValues.length > 1) {
 		let option = document.createElement("option");
 		option.innerText = "Multiple values";
+		option.value = "";
 		option.selected = true;
 		input.appendChild(option);
 	}
@@ -161,37 +199,46 @@ function getEnumDom(selecto, first, fields, values) {
 		input.appendChild(option);
 	});
 
-	container.appendChild(label);
-	container.appendChild(br);
-	container.appendChild(input);
-
-	return container;
+	return dom;
 }
 
 // create a checkbox from multiple field definitions
 function getBoolDom(selecto, first, fields, values) {
-	let container = document.createElement("div");
-	container.classList.add("input-element");
+	let dom = selecto.options.boolTemplate.content.cloneNode(true).firstElementChild;
+	let reset = dom.querySelector(".reset");
+	let changeReceiver = dom.querySelector(".change-receiver");
+	if (changeReceiver === null) {
+		changeReceiver = dom;
+	}
 
-	let label = document.createElement("label");
+	let label = dom.querySelector("#label");
+	label.id = "";
 	label.innerText = first.name;
 	label.for = first.id;
-
-	let br = document.createElement("br");
 
 	let distinctValues = getDistinctValues(values);
 
 	let originalValue = distinctValues.length == 1 ? distinctValues[0] : null;
 
-	let input = document.createElement("input");
+	let input = dom.querySelector("#input");
 	input.type = "checkbox";
 	input.id = first.id;
 	input.onchange = e => {
 		let newValue = e.target.checked;
 		selecto.onFieldChanged(first.id, newValue);
 
-		container.classList.toggle("changed", originalValue !== newValue);
+		changeReceiver.classList.toggle("changed", originalValue !== newValue);
+		if (reset !== null) {
+			reset.classList.toggle("changed", originalValue !== newValue);
+		}
 	};
+	if (reset !== null) {
+		reset.onclick = e => {
+			input.checked = originalValue;
+			input.dispatchEvent(new Event("change"));
+		};
+	}
+
 
 	if (distinctValues.length > 1) {
 		input.indeterminate = true;
@@ -199,11 +246,7 @@ function getBoolDom(selecto, first, fields, values) {
 		input.checked = distinctValues[0];
 	}
 
-	container.appendChild(label);
-	container.appendChild(br);
-	container.appendChild(input);
-
-	return container;
+	return dom;
 }
 
 function getDistinctValues(values, selector) {

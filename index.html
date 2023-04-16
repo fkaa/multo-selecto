@@ -19,8 +19,43 @@
 		<td>
 </template>
 
+<!-- Defining how slider options should look like -->
+<template id="sliderTemplate">
+	<div class="input-element">
+		<p>woo im a slider!
+		<br>
+		<label id="label"></label>
+		<br>
+		<input id="input"/>
+		<button class="reset">Reset</button>
+</template>
+
+<!-- Defining how checkbox options should look like -->
+<template id="boolTemplate">
+	<div class="input-element">
+		<label id="label"></label>
+		<br>
+		<input id="input"/>
+		<button class="reset">Reset</button>
+</template>
+
+<!-- Defining how combobox options should look like -->
+<template id="enumTemplate">
+	<div class="input-element">
+		<label id="label"></label>
+		<br>
+		<select id="input"></select>
+		<button class="reset">Reset</button>
+</template>
+
 <script src="multo-selecto.js"></script>
 <script>
+let multo = new MultoSelecto(formContainer, {
+	sliderTemplate: sliderTemplate,
+	enumTemplate: enumTemplate,
+	boolTemplate: boolTemplate,
+});
+
 let items = [];
 function createItemDescription(name, volume, bluetooth, codec) {
 	return {
@@ -86,8 +121,6 @@ function createItem(name, volume, bluetooth, codec) {
 
 	table.appendChild(tr);
 }
-
-let multo = new MultoSelecto(formContainer);
 
 createItem("Speaker", 20, false, "AAC");
 createItem("Earphones", 50, false, "OPUS");

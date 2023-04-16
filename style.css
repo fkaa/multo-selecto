@@ -21,6 +21,16 @@ table{
 	border: 1px solid white;
 	border-left: 3px solid #000;
 	padding-left: 0.4em;
+	position: relative;
+}
+.reset {
+	display: none;
+	position: absolute;
+	top:0;
+	right:0;
+}
+.reset.changed {
+	display: inline-block;
 }
 .changed {
 	border-left: 3px solid #fa0;
